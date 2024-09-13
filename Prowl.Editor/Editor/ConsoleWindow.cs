@@ -53,11 +53,11 @@ namespace Prowl.Editor
 
                 if (prevMessage.severity == logSeverity && prevMessage.message == message)
                 {
-                    if (prevMessage.trace.stackFrames.Length == stackTrace.stackFrames.Length)
+                    if (prevMessage.trace.StackFrames.Length == stackTrace.StackFrames.Length)
                     {
-                        if (stackTrace.stackFrames.Length > 0)
+                        if (stackTrace.StackFrames.Length > 0)
                         {
-                            if (prevMessage.trace.stackFrames[0] == stackTrace.stackFrames[0])
+                            if (prevMessage.trace.StackFrames[0] == stackTrace.StackFrames[0])
                             {
                                 prevMessage.DuplicateCount++;
                                 return;
@@ -179,11 +179,11 @@ namespace Prowl.Editor
                         gui.Draw2D.DrawText(Font.DefaultFont, selMsg, 20, textPos, color, textRect.width, textRect);
                     }
 
-                    if (_selectedMessage.trace != null && _selectedMessage.trace.stackFrames.Length != 0)
+                    if (_selectedMessage.trace != null && _selectedMessage.trace.StackFrames.Length != 0)
                     {
-                        for (int i = 0; i < _selectedMessage.trace.stackFrames.Length; i++)
+                        for (int i = 0; i < _selectedMessage.trace.StackFrames.Length; i++)
                         {
-                            DebugStackFrame frame = _selectedMessage.trace.stackFrames[i];
+                            DebugStackFrame frame = _selectedMessage.trace.StackFrames[i];
                             string frameText = frame.ToString();
                             Vector2 frameSize = Font.DefaultFont.CalcTextSize(frameText, font_size: 21, 0);
 
@@ -262,7 +262,7 @@ namespace Prowl.Editor
 
                 textRect.x += 7.5;
 
-                bool hasTrace = message.trace != null && message.trace.stackFrames.Length > 0;
+                bool hasTrace = message.trace != null && message.trace.StackFrames.Length > 0;
 
                 Vector2 textPos = textRect.Position;
                 textPos.y += (rect.height / 2) - (7.5 + (hasTrace ? 5 : 0));
@@ -291,7 +291,7 @@ namespace Prowl.Editor
                 {
                     textPos.y += 15;
 
-                    DebugStackFrame frame = message.trace.stackFrames[0];
+                    DebugStackFrame frame = message.trace.StackFrames[0];
 
                     string frameText = frame.ToString();
 
@@ -317,10 +317,10 @@ namespace Prowl.Editor
 
         private static void OpenStackFrame(DebugStackFrame frame)
         {
-            if (frame.fileName == null)
+            if (frame.FileName == null)
                 return;
 
-            AssetDatabase.OpenPath(new FileInfo(frame.fileName), frame.line, frame.column);
+            AssetDatabase.OpenPath(new FileInfo(frame.FileName), frame.Line, frame.Column);
         }
 
 
