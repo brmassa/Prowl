@@ -52,10 +52,9 @@ namespace Prowl.Runtime.Utils
 
         protected string GetFilePath(string? dataPath)
         {
-
             if (Attribute.GetCustomAttribute(GetType(), typeof(FilePathAttribute)) is FilePathAttribute attribute)
             {
-                string directory = string.Empty;
+                string directory;
                 switch (attribute.FileLocation)
                 {
                     case FilePathAttribute.Location.Data:
@@ -72,7 +71,8 @@ namespace Prowl.Runtime.Utils
                         ArgumentNullException.ThrowIfNull(dataPath);
 
                         // Persistent across sessions for a single project
-                        if (Application.isEditor == false)
+                        // TODO: Application.isRunning is just a hack to allow CLI operations that do not depend on the editor
+                        if (Application.isRunning && Application.isEditor == false)
                             throw new InvalidOperationException("Editor Settings are only available in the editor");
                         directory = Path.Combine(dataPath, "ProjectSettings", "Editor");
                         break;
@@ -83,6 +83,8 @@ namespace Prowl.Runtime.Utils
                             throw new InvalidOperationException("Preferences are only available in the editor");
                         directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Prowl", "Editor");
                         break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
                 // Ensure Directory Exists
                 Directory.CreateDirectory(directory);
@@ -101,8 +103,7 @@ namespace Prowl.Runtime.Utils
                 {
                     var deserialized = Serializer.Deserialize<T>(StringTagConverter.ReadFromFile(new FileInfo(filePath)))!;
                     deserialized.OnValidate();
-                    if (deserialized != null)
-                        return deserialized;
+                    return deserialized;
                 }
                 catch (Exception e)
                 {

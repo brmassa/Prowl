@@ -64,6 +64,7 @@ public class SceneViewWindow : EditorWindow
             true);
     }
 
+    private RenderPipeline? pipeline;
     protected override void Draw()
     {
         frames++;
@@ -127,7 +128,7 @@ public class SceneViewWindow : EditorWindow
             };
         }
 
-        RenderPipeline pipeline = Cam.Pipeline.Res ?? DefaultRenderPipeline.Default;
+        pipeline ??= Cam.Pipeline.Res ?? DefaultRenderPipeline.Default;
 
         pipeline.Render(RenderTarget, Cam, data);
 

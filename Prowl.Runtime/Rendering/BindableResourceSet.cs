@@ -95,7 +95,7 @@ namespace Prowl.Runtime
             list.SetGraphicsResourceSet(0, resources);
         }
 
-
+        private Texture? tex;
         private Veldrid.Texture GetTexture(string name, PropertyState state, TextureUsage usage, Texture defaultTex, out Sampler sampler)
         {
             Veldrid.Texture texture;
@@ -108,7 +108,7 @@ namespace Prowl.Runtime
                     sampler = defaultTex.Sampler.InternalSampler;
                 }
 
-                Texture tex = (prop.texture ?? defaultTex).Res ?? defaultTex;
+                tex ??= (prop.texture ?? defaultTex).Res;
 
                 texture = tex.InternalTexture;
                 sampler = tex.Sampler.InternalSampler;

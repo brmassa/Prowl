@@ -5,33 +5,32 @@ using System;
 
 namespace Prowl.Runtime
 {
-
     // Taken and modified from Duality's ContentRef.cs
     // https://github.com/AdamsLair/duality/blob/master/Source/Core/Duality/ContentRef.cs
 
-    public struct AssetRef<T> : IAssetRef, ISerializable where T : EngineObject
+    public struct AssetRef<T> : IAssetRef, ISerializable, IEquatable<AssetRef<T>> where T : EngineObject
     {
-        private T? instance;
-        private Guid assetID = Guid.Empty;
-        private ushort fileID = 0;
+        private T? _instance;
+        private Guid _assetId = Guid.Empty;
+        private ushort _fileId = 0;
 
         /// <summary>
-		/// The actual <see cref="EngineObject"/>. If currently unavailable, it is loaded and then returned.
-		/// Because of that, this Property is only null if the references Resource is missing, invalid, or
-		/// this content reference has been explicitly set to null. Never returns disposed Resources.
-		/// </summary>
-		public T? Res
+        /// The actual <see cref="EngineObject"/>. If currently unavailable, it is loaded and then returned.
+        /// Because of that, this Property is only null if the references Resource is missing, invalid, or
+        /// this content reference has been explicitly set to null. Never returns disposed Resources.
+        /// </summary>
+        public T? Res
         {
             get
             {
-                if (instance == null || instance.IsDestroyed) RetrieveInstance();
-                return instance;
+                if (_instance == null || _instance.IsDestroyed) RetrieveInstance();
+                return _instance;
             }
-            set
+            private set
             {
-                assetID = value == null ? Guid.Empty : value.AssetID;
-                fileID = value == null ? (ushort)0 : value.FileID;
-                instance = value;
+                _assetId = value?.AssetID ?? Guid.Empty;
+                _fileId = value?.FileID ?? 0;
+                _instance = value;
             }
         }
 
@@ -41,7 +40,7 @@ namespace Prowl.Runtime
         /// </summary>
         public T? ResWeak
         {
-            get { return instance == null || instance.IsDestroyed ? null : instance; }
+            get { return _instance == null || _instance.IsDestroyed ? null : _instance; }
         }
 
         /// <summary>
@@ -49,12 +48,12 @@ namespace Prowl.Runtime
         /// </summary>
         public Guid AssetID
         {
-            get { return assetID; }
+            get { return _assetId; }
             set
             {
-                assetID = value;
-                if (instance != null && instance.AssetID != value)
-                    instance = null;
+                _assetId = value;
+                if (_instance != null && _instance.AssetID != value)
+                    _instance = null;
             }
         }
 
@@ -63,8 +62,8 @@ namespace Prowl.Runtime
         /// </summary>
         public ushort FileID
         {
-            get => fileID;
-            set => fileID = value;
+            get => _fileId;
+            set => _fileId = value;
         }
 
 
@@ -73,10 +72,7 @@ namespace Prowl.Runtime
         /// </summary>
         public bool IsExplicitNull
         {
-            get
-            {
-                return instance == null && assetID == Guid.Empty;
-            }
+            get { return _instance == null && _assetId == Guid.Empty; }
         }
 
         /// <summary>
@@ -86,75 +82,63 @@ namespace Prowl.Runtime
         {
             get
             {
-                if (instance != null && !instance.IsDestroyed) return true;
+                if (_instance is { IsDestroyed: false }) return true;
                 RetrieveInstance();
-                return instance != null;
+                return _instance is not null;
             }
         }
 
         /// <summary>
         /// Returns whether the referenced Resource is currently loaded.
         /// </summary>
-        public bool IsLoaded
-        {
-            get
-            {
-                if (instance != null && !instance.IsDestroyed) return true;
-                return Application.AssetProvider.HasAsset(assetID);
-            }
-        }
+        public bool IsLoaded => _instance is { IsDestroyed: false } || Application.AssetProvider.HasAsset(_assetId);
 
         /// <summary>
         /// Returns whether the Resource has been generated at runtime and cannot be retrieved via content path.
         /// </summary>
-        public bool IsRuntimeResource
-        {
-            get { return instance != null && assetID == Guid.Empty; }
-        }
+        public bool IsRuntimeResource => _instance != null && _assetId == Guid.Empty;
 
-        public string Name
-        {
-            get
-            {
-                if (instance != null) return instance.IsDestroyed ? "DESTROYED_" + instance.Name : instance.Name;
-                return "No Instance";
-            }
-        }
+        public string Name =>
+            _instance != null
+                ? _instance.IsDestroyed ? "DESTROYED_" + _instance.Name : _instance.Name
+                : "No Instance";
 
         public Type InstanceType => typeof(T);
 
         /// <summary>
-        /// Creates a ContentRef pointing to the <see cref="Resource"/> at the specified id / using
+        /// Creates a AssetRef pointing to the <see cref="EngineObject"/> at the specified id / using
         /// the specified alias.
         /// </summary>
         /// <param name="id"></param>
         public AssetRef(Guid id)
         {
-            instance = null;
-            assetID = id;
+            _instance = null;
+            _assetId = id;
             FileID = 0;
         }
 
         /// <summary>
-        /// Creates a ContentRef pointing to the <see cref="Resource"/> at the specified id / using
+        /// Creates a AssetRef pointing to the <see cref="EngineObject"/> at the specified id / using
         /// the specified alias.
         /// </summary>
         /// <param name="id"></param>
+        /// <param name="fileId"></param>
         public AssetRef(Guid id, ushort fileId)
         {
-            instance = null;
-            assetID = id;
-            fileID = fileId;
+            _instance = null;
+            _assetId = id;
+            _fileId = fileId;
         }
+
         /// <summary>
-        /// Creates a ContentRef pointing to the specified <see cref="Resource"/>.
+        /// Creates a AssetRef pointing to the specified <see cref="EngineObject"/>.
         /// </summary>
         /// <param name="res">The Resource to reference.</param>
         public AssetRef(T? res)
         {
-            instance = res;
-            assetID = res != null ? res.AssetID : Guid.Empty;
-            fileID = res != null ? res.FileID : (ushort)0;
+            _instance = res;
+            _assetId = res?.AssetID ?? Guid.Empty;
+            _fileId = res?.FileID ?? 0;
         }
 
         public object? GetInstance()
@@ -177,26 +161,32 @@ namespace Prowl.Runtime
         /// </summary>
         public void EnsureLoaded()
         {
-            if (instance == null || instance.IsDestroyed)
+            if (_instance == null || _instance.IsDestroyed)
                 RetrieveInstance();
         }
+
         /// <summary>
         /// Discards the resolved content reference cache to allow garbage-collecting the Resource
         /// without losing its reference. Accessing it will result in reloading the Resource.
         /// </summary>
         public void Detach()
         {
-            instance = null;
+            _instance = null;
         }
 
         private void RetrieveInstance()
         {
-            if (assetID != Guid.Empty)
-                instance = (T)Application.AssetProvider.LoadAsset<T>(assetID, fileID);
-            else if (instance != null && instance.AssetID != Guid.Empty)
-                instance = (T)Application.AssetProvider.LoadAsset<T>(instance.AssetID, instance.FileID);
+            if (_assetId != Guid.Empty)
+            {
+                if (_instance is null)
+                    _instance = (T)Application.AssetProvider.LoadAsset<T>(_assetId, _fileId);
+                else
+                    _instance = (T)Application.AssetProvider.LoadAsset<T>(_instance.AssetID, _instance.FileID);
+            }
             else
-                instance = null;
+            {
+                _instance = null;
+            }
         }
 
         public override string ToString()
@@ -213,7 +203,7 @@ namespace Prowl.Runtime
             else
                 stateChar = '_';
 
-            return string.Format("[{2}] {0}", resType.Name, stateChar);
+            return $"[{stateChar}] {resType.Name}";
         }
 
         public override bool Equals(object? obj)
@@ -226,8 +216,8 @@ namespace Prowl.Runtime
 
         public override int GetHashCode()
         {
-            if (assetID != Guid.Empty) return assetID.GetHashCode() + fileID.GetHashCode();
-            else if (instance != null) return instance.GetHashCode();
+            if (_assetId != Guid.Empty) return _assetId.GetHashCode() + _fileId.GetHashCode();
+            else if (_instance != null) return _instance.GetHashCode();
             else return 0;
         }
 
@@ -240,6 +230,7 @@ namespace Prowl.Runtime
         {
             return new AssetRef<T>(res);
         }
+
         public static explicit operator T(AssetRef<T> res)
         {
             return res.Res;
@@ -263,22 +254,23 @@ namespace Prowl.Runtime
             //    return first.assetID == second.assetID;
 
             // Completely identical
-            if (first.instance == second.instance && first.assetID == second.assetID)
+            if (first._instance == second._instance && first._assetId == second._assetId)
                 return true;
             // Same instances
-            else if (first.instance != null && second.instance != null)
-                return first.instance == second.instance;
+            else if (first._instance != null && second._instance != null)
+                return first._instance == second._instance;
             // Null checks
             else if (first.IsExplicitNull) return second.IsExplicitNull;
             else if (second.IsExplicitNull) return first.IsExplicitNull;
             // Path comparison
             else
             {
-                Guid? firstPath = first.instance != null ? first.instance.AssetID : first.assetID;
-                Guid? secondPath = second.instance != null ? second.instance.AssetID : second.assetID;
-                return firstPath == secondPath && first.fileID == second.fileID;
+                Guid? firstPath = first._instance?.AssetID ?? first._assetId;
+                Guid? secondPath = second._instance?.AssetID ?? second._assetId;
+                return firstPath == secondPath && first._fileId == second._fileId;
             }
         }
+
         /// <summary>
         /// Compares two AssetRefs for inequality.
         /// </summary>
@@ -293,22 +285,22 @@ namespace Prowl.Runtime
         public SerializedProperty Serialize(Serializer.SerializationContext ctx)
         {
             SerializedProperty compoundTag = SerializedProperty.NewCompound();
-            compoundTag.Add("AssetID", new SerializedProperty(assetID.ToString()));
-            if (assetID != Guid.Empty)
-                ctx.AddDependency(assetID);
-            if (fileID != 0)
-                compoundTag.Add("FileID", new SerializedProperty(fileID));
+            compoundTag.Add("AssetID", new SerializedProperty(_assetId.ToString()));
+            if (_assetId != Guid.Empty)
+                ctx.AddDependency(_assetId);
+            if (_fileId != 0)
+                compoundTag.Add("FileID", new SerializedProperty(_fileId));
             if (IsRuntimeResource)
-                compoundTag.Add("Instance", Serializer.Serialize(instance, ctx));
+                compoundTag.Add("Instance", Serializer.Serialize(_instance, ctx));
             return compoundTag;
         }
 
         public void Deserialize(SerializedProperty value, Serializer.SerializationContext ctx)
         {
-            assetID = Guid.Parse(value["AssetID"].StringValue);
-            fileID = value.TryGet("FileID", out SerializedProperty fileTag) ? fileTag.UShortValue : (ushort)0;
-            if (assetID == Guid.Empty && value.TryGet("Instance", out SerializedProperty tag))
-                instance = Serializer.Deserialize<T?>(tag, ctx);
+            _assetId = Guid.Parse(value["AssetID"].StringValue);
+            _fileId = value.TryGet("FileID", out SerializedProperty fileTag) ? fileTag.UShortValue : (ushort)0;
+            if (_assetId == Guid.Empty && value.TryGet("Instance", out SerializedProperty tag))
+                _instance = Serializer.Deserialize<T?>(tag, ctx);
         }
     }
 }
