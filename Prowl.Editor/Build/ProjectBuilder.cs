@@ -22,11 +22,11 @@ namespace Prowl.Editor.Build
                 return;
 
             Debug.Log($"Starting Project Build...");
-            BoundedLog($"Creating Directories...");
+            Project.BoundedLog($"Creating Directories...");
 
             if (output.Exists)
             {
-                BoundedLog($"Deleting existing build directory...");
+                Project.BoundedLog($"Deleting existing build directory...");
                 output.Delete(true);
             }
 
@@ -46,13 +46,13 @@ namespace Prowl.Editor.Build
         {
             if (scenes == null)
             {
-                Debug.LogError($"Atleast 1 Scene must be assigned in the Build Project Settings Window");
+                Debug.LogError($"At least 1 Scene must be assigned in the Build Project Settings Window");
                 return false;
             }
 
             if (scenes.Length <= 0)
             {
-                Debug.LogError($"Atleast 1 Scene must be assigned in the Build Project Settings Window");
+                Debug.LogError($"At least 1 Scene must be assigned in the Build Project Settings Window");
                 return false;
             }
 
@@ -65,13 +65,6 @@ namespace Prowl.Editor.Build
                 }
 
             return true;
-        }
-
-        protected void BoundedLog(string message)
-        {
-            Debug.Log("**********************************************************************************************************************");
-            Debug.Log(message);
-            Debug.Log("**********************************************************************************************************************");
         }
 
         public static IEnumerable<ProjectBuilder> GetAll()

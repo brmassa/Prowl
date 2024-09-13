@@ -50,14 +50,14 @@ namespace Prowl.Editor.Build
             Directory.CreateDirectory(BuildDataPath);
 
 
-            BoundedLog($"Compiling project assembly to {output.FullName}...");
+            Project.BoundedLog($"Compiling project assembly to {output.FullName}...");
             if (!Project.Compile(Project.Active.Assembly_Proj.FullName, output, configuration == Configuration.Release))
             {
                 Debug.LogError($"Failed to compile Project assembly!");
                 return;
             }
 
-            BoundedLog($"Exporting and Packing assets to {BuildDataPath}...");
+            Project.BoundedLog($"Exporting and Packing assets to {BuildDataPath}...");
             if (assetPacking == AssetPacking.All)
             {
                 AssetDatabase.ExportAllBuildPackages(new DirectoryInfo(BuildDataPath));
@@ -76,17 +76,17 @@ namespace Prowl.Editor.Build
             }
 
 
-            BoundedLog($"Packing scenes...");
+            Project.BoundedLog($"Packing scenes...");
             for (int i = 0; i < scenes.Length; i++)
             {
-                BoundedLog($"Packing scene_{i}.prowl...");
+                Project.BoundedLog($"Packing scene_{i}.prowl...");
                 var scene = scenes[i];
                 SerializedProperty tag = Serializer.Serialize(scene.Res!);
                 BinaryTagConverter.WriteToFile(tag, new FileInfo(Path.Combine(BuildDataPath, $"scene_{i}.prowl")));
             }
 
 
-            BoundedLog($"Preparing project settings...");
+            Project.BoundedLog($"Preparing project settings...");
             // Find all ScriptableSingletons with the specified location
             foreach (var type in RuntimeUtils.GetTypesWithAttribute<FilePathAttribute>())
                 if (Attribute.GetCustomAttribute(type, typeof(FilePathAttribute)) is FilePathAttribute attribute)
@@ -106,7 +106,7 @@ namespace Prowl.Editor.Build
                     }
 
 
-            BoundedLog($"Copying Desktop player to {output.FullName}...");
+            Project.BoundedLog($"Copying Desktop player to {output.FullName}...");
             // Our executable folder contains "Players\Desktop" which we need to copy over the contents
             string playerPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Players", "Desktop");
             if (!Directory.Exists(playerPath))
