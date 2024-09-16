@@ -1,6 +1,9 @@
 ﻿// This file is part of the Prowl Game Engine
 // Licensed under the MIT License. See the LICENSE file in the project root for details.
 
+using System;
+using System.Diagnostics.CodeAnalysis;
+
 namespace Prowl.Runtime.GUI;
 
 public struct Spacing
@@ -29,22 +32,29 @@ public struct Spacing
 
     public static bool operator ==(Spacing s1, Spacing s2)
     {
-        return s1.Left == s2.Left &&
-               s1.Right == s2.Right &&
-               s1.Top == s2.Top &&
-               s1.Bottom == s2.Bottom;
+        return s1.Equals(s2);
     }
 
     public static bool operator !=(Spacing s1, Spacing s2)
     {
-        return s1.Left != s2.Left ||
-               s1.Right != s2.Right ||
-               s1.Top != s2.Top ||
-               s1.Bottom != s2.Bottom;
+        return !s1.Equals(s2);
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals([AllowNull] object obj)
     {
-        throw new System.NotImplementedException();
+        return obj is Spacing spacing && Equals(spacing);
+    }
+
+    public readonly bool Equals(Spacing other)
+    {
+        return Left == other.Left &&
+               Right == other.Right &&
+               Top == other.Top &&
+               Bottom == other.Bottom;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Left, Right, Top, Bottom);
     }
 }
