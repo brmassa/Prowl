@@ -20,20 +20,24 @@ public class DefaultRenderPipeline : RenderPipeline
 
     private static void ValidateDefaults()
     {
+        // TODO: FIXME: these values are never null
         s_gridMesh ??= Mesh.CreateQuad(Vector2.one);
         s_gridMaterial ??= new Material(Application.AssetProvider.LoadAsset<Shader>("Defaults/Grid.shader"));
         s_defaultMaterial ??= new Material(Application.AssetProvider.LoadAsset<Shader>("Defaults/DefaultUnlit.shader"));
         s_skybox ??= new Material(Application.AssetProvider.LoadAsset<Shader>("Defaults/ProceduralSky.shader"));
 
-        if (s_skyDome == null)
-        {
-            GameObject skyDomeModel = Application.AssetProvider.LoadAsset<GameObject>("Defaults/SkyDome.obj").Res;
-            MeshRenderer renderer = skyDomeModel.GetComponentInChildren<MeshRenderer>(true, true);
+        // TODO: FIXME: s_skyDome is never null
+        // if (s_skyDome == null)
+        // {
+        GameObject skyDomeModel = Application.AssetProvider.LoadAsset<GameObject>("Defaults/SkyDome.obj").Res;
+        MeshRenderer renderer = skyDomeModel.GetComponentInChildren<MeshRenderer>(true, true);
 
+        if (renderer.Mesh.Res is not null)
+        {
             s_skyDome = renderer.Mesh.Res;
         }
+        // }
     }
-
 
     public static DefaultRenderPipeline Default = new();
 
