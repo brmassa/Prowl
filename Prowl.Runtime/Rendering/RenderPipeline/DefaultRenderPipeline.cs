@@ -20,7 +20,6 @@ public class DefaultRenderPipeline : RenderPipeline
 
     private static void ValidateDefaults()
     {
-        // TODO: FIXME: these values are never null
         s_gridMesh ??= Mesh.CreateQuad(Vector2.one);
         s_gridMaterial ??= new Material(Application.AssetProvider.LoadAsset<Shader>("Defaults/Grid.shader"));
         s_defaultMaterial ??= new Material(Application.AssetProvider.LoadAsset<Shader>("Defaults/DefaultUnlit.shader"));

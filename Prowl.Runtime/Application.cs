@@ -92,7 +92,7 @@ public static class Application
 
         AssemblyManager.Initialize();
 
-        Initialize?.Invoke();
+        Initialize.Invoke();
 
         Debug.LogSuccess("Initialization complete");
     }
@@ -107,8 +107,8 @@ public static class Application
 
             Time.TimeStack.Push(AppTime);
 
-            Update?.Invoke();
-            Render?.Invoke();
+            Update.Invoke();
+            Render.Invoke();
 
             Time.TimeStack.Pop();
         }
@@ -121,7 +121,7 @@ public static class Application
     static void AppClose()
     {
         isRunning = false;
-        Quitting?.Invoke();
+        Quitting.Invoke();
         Graphics.Dispose();
         Physics.Dispose();
         AudioSystem.Dispose();
