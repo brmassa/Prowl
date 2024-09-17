@@ -189,11 +189,11 @@ public sealed class RenderTexture : EngineObject, ISerializable
 
     public override void OnDispose()
     {
-        DepthBuffer?.Destroy();
+        DepthBuffer?.Dispose();
 
         if (ColorBuffers != null)
             foreach (var tex in ColorBuffers)
-                tex?.Destroy();
+                tex?.Dispose();
 
         Framebuffer?.Dispose();
 
