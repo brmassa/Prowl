@@ -39,7 +39,7 @@ public class DefaultRenderPipeline : RenderPipeline
         // }
     }
 
-    public static DefaultRenderPipeline Default = new();
+    public static readonly DefaultRenderPipeline Default = new();
 
     public override void Render(Framebuffer target, Camera camera, in RenderingData data)
     {

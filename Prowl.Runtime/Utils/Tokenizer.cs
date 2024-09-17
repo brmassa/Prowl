@@ -18,8 +18,8 @@ public class Tokenizer
     public int CurrentLine { get; set; } = 1;
     public int CurrentColumn { get; set; }
 
-    public Func<char, bool> IsWhitespace;
-    public Func<char, bool> IsQuote;
+    public readonly Func<char, bool> IsWhitespace;
+    public readonly Func<char, bool> IsQuote;
 
     public Tokenizer(ReadOnlyMemory<char> input, Func<char, bool>? isWhitespace = null, Func<char, bool>? isQuote = null)
     {

@@ -9,7 +9,7 @@ namespace Prowl.Runtime;
 
 public class CommandBuffer : IDisposable
 {
-    internal CommandList _commandList;
+    internal readonly CommandList _commandList;
     private bool _isRecording = false;
 
     private Framebuffer _activeFramebuffer;
